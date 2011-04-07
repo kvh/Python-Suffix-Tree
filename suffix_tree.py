@@ -15,9 +15,6 @@ class Node(object):
     suffix_node
         the index of a node with a matching suffix, representing a suffix link.
         -1 indicates this node has no suffix link.
-    
-    node_count (static) 
-        keeps the count of total nodes in the tree
     """
     def __init__(self):
         self.suffix_node = -1   
@@ -78,7 +75,8 @@ class Suffix(object):
                 
     def explicit(self):
         """A suffix is explicit if it ends on a node. first_char_index
-        is set greater than last_char_index to indicate this."""
+        is set greater than last_char_index to indicate this.
+        """
         return self.first_char_index > self.last_char_index
     
     def implicit(self):
@@ -86,8 +84,18 @@ class Suffix(object):
 
         
 class SuffixTree(object):
-    def __init__(self, string):
+    """A suffix tree for string matching. Uses Ukkonen's algorithm
+    for construction.
+    """
+    def __init__(self, string, case_insensitive=False):
+        """
+        string
+            the string for which to construct a suffix tree
+        """
         self.string = string
+        self.case_insensitive = case_insensitive
+        if self.case_insensitive:
+            self.string = self.string.lower()
         self.N = len(string) - 1
         self.nodes = [Node()]
         self.edges = {}
@@ -96,7 +104,8 @@ class SuffixTree(object):
             self.add_prefix(i)
             
     def add_prefix(self, last_char_index):
-        
+        """The core construction method.
+        """
         last_parent_node = -1
         while True:
             parent_node = self.active.source_node_index
@@ -152,6 +161,10 @@ class SuffixTree(object):
         return e.dest_node_index
 
     def canonize_suffix(self, suffix):
+        """
+        This canonizes the suffix, walking along its suffix string until it 
+        is explicit or there are no more matched nodes.
+        """
         if not suffix.explicit():
             e = self.edges[suffix.source_node_index, self.string[suffix.first_char_index]]
             if e.length <= suffix.length:
@@ -178,24 +191,29 @@ class SuffixTree(object):
             top = min(curr_index, s.last_char_index)
             print self.string[s.first_char_index:top+1]
     
-    def has_substring(self, substring):
+    def find_substring(self, substring):
+        """
+        Returns the index of substring in string or -1 if it
+        is not found.
+        """
         if not substring:
-            return True
+            return -1
+        if self.case_insensitive:
+            substring = substring.lower()
         curr_node = 0
         i = 0
         while i < len(substring):
             edge = self.edges.get((curr_node, substring[i]))
             if not edge:
-                return False
+                return -1
             ln = min(edge.length + 1, len(substring) - i)
             if substring[i:i + ln] != self.string[edge.first_char_index:edge.first_char_index + ln]:
-                return False
+                return -1
             i += edge.length + 1
             curr_node = edge.dest_node_index
-        return True
+        return edge.first_char_index - len(substring) + ln
+        
+    def has_substring(self, substring):
+        return self.find_substring(substring) != -1
 
-if __name__ == '__main__':
-
-    tree = SuffixTree('banana$')
-    tree.print_()
         
