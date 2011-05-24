@@ -1,14 +1,3 @@
-""" 
-Ken Van Haren
-krv2@duke.edu
-
-Based off of Mark Nelson's C++ implementation of Ukkonen's algorithm. Ukkonen's
-algorithm gives a O(n) + O(k) contruction time for a suffix tree, where n is 
-the length of the string and k is the size of the alphabet of that string. 
-Ukkonen's is an online algorithm, processing the input sequentially and producing 
-a valid suffix tree at each character.
-"""
-
 class Node(object):
     """A node in the suffix tree. 
     
@@ -94,16 +83,38 @@ class SuffixTree(object):
         """
         self.string = string
         self.case_insensitive = case_insensitive
-        if self.case_insensitive:
-            self.string = self.string.lower()
         self.N = len(string) - 1
         self.nodes = [Node()]
         self.edges = {}
         self.active = Suffix(0, 0, -1)
+        if self.case_insensitive:
+            self.string = self.string.lower()
         for i in range(len(string)):
-            self.add_prefix(i)
+            self._add_prefix(i)
+    
+    def __repr__(self):
+        """ 
+        Lists edges in the suffix tree
+        """
+        curr_index = self.N
+        s = "\tStart \tEnd \tSuf \tFirst \tLast \tString\n"
+        values = self.edges.values()
+        values.sort(key=lambda x: x.source_node_index)
+        for s in values:
+            if s.source_node_index == -1:
+                continue
+            s += "\t%s \t%s \t%s \t%s \t%s \t\n"%(s.source_node_index
+                    ,s.dest_node_index 
+                    ,self.nodes[s.dest_node_index].suffix_node 
+                    ,s.first_char_index
+                    ,s.last_char_index),
+                    
             
-    def add_prefix(self, last_char_index):
+            top = min(curr_index, s.last_char_index)
+            s += self.string[s.first_char_index:top+1] + "\n"
+        return s
+            
+    def _add_prefix(self, last_char_index):
         """The core construction method.
         """
         last_parent_node = -1
@@ -118,12 +129,12 @@ class SuffixTree(object):
                 if self.string[e.first_char_index + self.active.length + 1] == self.string[last_char_index]:
                     # prefix is already in tree
                     break
-                parent_node = self.split_edge(e, self.active)
+                parent_node = self._split_edge(e, self.active)
         
 
             self.nodes.append(Node())
             e = Edge(last_char_index, self.N, parent_node, len(self.nodes) - 1)
-            self.insert_edge(e)
+            self._insert_edge(e)
             
             if last_parent_node > 0:
                 self.nodes[last_parent_node].suffix_node = parent_node
@@ -133,36 +144,31 @@ class SuffixTree(object):
                 self.active.first_char_index += 1
             else:
                 self.active.source_node_index = self.nodes[self.active.source_node_index].suffix_node
-            self.canonize_suffix(self.active)
+            self._canonize_suffix(self.active)
         if last_parent_node > 0:
             self.nodes[last_parent_node].suffix_node = parent_node
         self.active.last_char_index += 1
-        self.canonize_suffix(self.active)
+        self._canonize_suffix(self.active)
         
-    
-    def find_edge(self, node_index, char):
-        return self.edges.get((node_index, char), Edge(None, None, -1, -1))
-        
-    def insert_edge(self, edge):
+    def _insert_edge(self, edge):
         self.edges[(edge.source_node_index, self.string[edge.first_char_index])] = edge
         
-    def remove_edge(self, edge):
+    def _remove_edge(self, edge):
         self.edges.pop((edge.source_node_index, self.string[edge.first_char_index]))
         
-    def split_edge(self, edge, suffix):
+    def _split_edge(self, edge, suffix):
         self.nodes.append(Node())
         e = Edge(edge.first_char_index, edge.first_char_index + suffix.length, suffix.source_node_index, len(self.nodes) - 1)
-        self.remove_edge(edge)
-        self.insert_edge(e)
+        self._remove_edge(edge)
+        self._insert_edge(e)
         self.nodes[e.dest_node_index].suffix_node = suffix.source_node_index  ### need to add node for each edge
         edge.first_char_index += suffix.length + 1
         edge.source_node_index = e.dest_node_index
-        self.insert_edge(edge)
+        self._insert_edge(edge)
         return e.dest_node_index
 
-    def canonize_suffix(self, suffix):
-        """
-        This canonizes the suffix, walking along its suffix string until it 
+    def _canonize_suffix(self, suffix):
+        """This canonizes the suffix, walking along its suffix string until it 
         is explicit or there are no more matched nodes.
         """
         if not suffix.explicit():
@@ -170,30 +176,12 @@ class SuffixTree(object):
             if e.length <= suffix.length:
                 suffix.first_char_index += e.length + 1
                 suffix.source_node_index = e.dest_node_index
-                self.canonize_suffix(suffix)
+                self._canonize_suffix(suffix)
  
-    def print_(self, curr_index=None):
-        if curr_index is None:
-            curr_index = self.N
-        print "\tStart \tEnd \tSuf \tFirst \tLast \tString"
-        values = self.edges.values()
-        values.sort(key=lambda x: x.source_node_index)
-        for s in values:
-            if s.source_node_index == -1:
-                continue
-            print "\t%s \t%s \t%s \t%s \t%s \t"%(s.source_node_index
-                    ,s.dest_node_index 
-                    ,self.nodes[s.dest_node_index].suffix_node 
-                    ,s.first_char_index
-                    ,s.last_char_index),
-                    
-            
-            top = min(curr_index, s.last_char_index)
-            print self.string[s.first_char_index:top+1]
-    
+
+    # Public methods
     def find_substring(self, substring):
-        """
-        Returns the index of substring in string or -1 if it
+        """Returns the index of substring in string or -1 if it
         is not found.
         """
         if not substring:
