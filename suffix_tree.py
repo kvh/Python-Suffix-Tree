@@ -100,18 +100,18 @@ class SuffixTree(object):
         s = "\tStart \tEnd \tSuf \tFirst \tLast \tString\n"
         values = self.edges.values()
         values.sort(key=lambda x: x.source_node_index)
-        for s in values:
-            if s.source_node_index == -1:
+        for edge in values:
+            if edge.source_node_index == -1:
                 continue
-            s += "\t%s \t%s \t%s \t%s \t%s \t\n"%(s.source_node_index
-                    ,s.dest_node_index 
-                    ,self.nodes[s.dest_node_index].suffix_node 
-                    ,s.first_char_index
-                    ,s.last_char_index),
+            s += "\t%s \t%s \t%s \t%s \t%s \t\n"%(edge.source_node_index
+                    ,edge.dest_node_index 
+                    ,self.nodes[edge.dest_node_index].suffix_node 
+                    ,edge.first_char_index
+                    ,edge.last_char_index)
                     
             
-            top = min(curr_index, s.last_char_index)
-            s += self.string[s.first_char_index:top+1] + "\n"
+            top = min(curr_index, edge.last_char_index)
+            s += self.string[edge.first_char_index:top+1] + "\n"
         return s
             
     def _add_prefix(self, last_char_index):

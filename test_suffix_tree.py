@@ -40,6 +40,10 @@ class SuffixTreeTest(unittest.TestCase):
         self.assertEqual(st.find_substring('ukkonen'), 1498)
         self.assertEqual(st.find_substring('Optimal'), 1830)
 
+    def test_repr(self):
+        st = SuffixTree("t")
+        output = '\tStart \tEnd \tSuf \tFirst \tLast \tString\n\t0 \t1 \t-1 \t0 \t0 \t\nt\n'
+        self.assertEqual(st.__repr__(), output)
 
 if __name__ == '__main__':
     unittest.main()
