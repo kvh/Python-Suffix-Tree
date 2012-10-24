@@ -103,7 +103,7 @@ class SuffixTree(object):
         for edge in values:
             if edge.source_node_index == -1:
                 continue
-            s += "\t%s \t%s \t%s \t%s \t%s \t\n"%(edge.source_node_index
+            s += "\t%s \t%s \t%s \t%s \t%s \t"%(edge.source_node_index
                     ,edge.dest_node_index 
                     ,self.nodes[edge.dest_node_index].suffix_node 
                     ,edge.first_char_index
