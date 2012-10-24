@@ -42,7 +42,8 @@ class SuffixTreeTest(unittest.TestCase):
 
     def test_repr(self):
         st = SuffixTree("t")
-        output = '\tStart \tEnd \tSuf \tFirst \tLast \tString\n\t0 \t1 \t-1 \t0 \t0 \t\nt\n'
+        output = '\tStart \tEnd \tSuf \tFirst \tLast \tString\n\t0 \t1 \t-1 \t0 \t0 \tt\n'
+        import pdb;pdb.set_trace()
         self.assertEqual(st.__repr__(), output)
 
 if __name__ == '__main__':
