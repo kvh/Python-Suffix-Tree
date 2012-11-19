@@ -13,3 +13,11 @@ How to use
 	string = "I need to be searched!"
     tree = SuffixTree(string)
 	index_of_need = stree.find_substring("need")
+
+Usage note
+----------
+
+This library is mostly an academic exercise. 
+If you need an efficient library
+I would recommend a python-wrapped c implementation, 
+such as [this one](http://www.daimi.au.dk/~mailund/suffix_tree.html).
