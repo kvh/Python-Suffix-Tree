@@ -12,7 +12,7 @@ How to use
 
 	string = "I need to be searched!"
     tree = SuffixTree(string)
-	index_of_need = stree.find_substring("need")
+	index_of_need = tree.find_substring("need")
 
 Usage note
 ----------
