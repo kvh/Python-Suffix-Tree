@@ -99,7 +99,9 @@ class SuffixTree(object):
         curr_index = self.N
         s = "\tStart \tEnd \tSuf \tFirst \tLast \tString\n"
         values = self.edges.values()
-        values.sort(key=lambda x: x.source_node_index)
+        
+        values = sorted(values, 
+            key=lambda x: x.source_node_index)
         for edge in values:
             if edge.source_node_index == -1:
                 continue
